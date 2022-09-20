@@ -24,8 +24,8 @@ app.get("/", (req, res) => {
 	res.json("asd");
 });
 
-app.listen(process.env.PORT || 5000, () => {
+app.listen(() => {
 	/* eslint-disable no-console */
-	console.log(`Listening: http://localhost:${process.env.PORT || 5000}`);
+	console.log(`Started server...`);
 	/* eslint-enable no-console */
 });
