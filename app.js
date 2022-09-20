@@ -21,10 +21,10 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-	res.json("asd");
+	res.json(file);
 });
 
-app.listen(() => {
+app.listen(5000, () => {
 	/* eslint-disable no-console */
 	console.log(`Started server...`);
 	/* eslint-enable no-console */
