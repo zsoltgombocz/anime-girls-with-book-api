@@ -1,0 +1,22 @@
+{
+  "name": "anime-girls-with-book-api",
+  "version": "1.0.0",
+  "description": "Simple API with a route to serve anim girls with book image URL-s scraped from GitHub.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "scrape": "node scraper.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.0.2",
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
