@@ -1,5 +1,8 @@
 const express = require("express");
+const { paginateData } = require("./paginateData");
+const { filterData } = require("./filterData");
 let file;
+const IMAGE_PER_PAGE = 5;
 
 try {
 	file = require("./data.json");
@@ -14,14 +17,19 @@ const app = express();
 app.use((req, res, next) => {
 	if (file) {
 		next();
-	} else
+	} else {
 		res.status(500).json({
 			error: "No data file found, try executing 'npm run scrape' on the backend.",
 		});
+	}
 });
 
 app.get("/", (req, res) => {
-	res.json(file);
+	let data = filterData(file, req.query.filter);
+
+	//let page = parseInt(req.query.page) ?? 1;
+	//paginateData(file, page, IMAGE_PER_PAGE);
+	res.json(data);
 });
 
 app.listen(5000, () => {
