@@ -25,11 +25,9 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-	let data = filterData(file, req.query.filter);
-
-	//let page = parseInt(req.query.page) ?? 1;
-	//paginateData(file, page, IMAGE_PER_PAGE);
-	res.json(data);
+	let filteredData = filterData(file, req.query.filter);
+	let paginatedData = paginateData(filteredData, req.query.page, IMAGE_PER_PAGE);
+	res.json(paginatedData);
 });
 
 app.listen(5000, () => {
