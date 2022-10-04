@@ -6,8 +6,6 @@ require("dotenv").config();
 
 const path = require("path");
 
-const root = path.dirname(require.main.filename || process.mainModule.filename);
-
 const excludeLinkName = ["CONTRIBUTING.md", "README.md", "memes"];
 
 const getFolders = async () => {
