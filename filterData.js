@@ -35,7 +35,7 @@ const imageObject = (folderName, imageUrl) => {
 };
 
 const getTitleFromURL = (url) => {
-	const extensions = [".jpg", ".png", ".webp", ".bmp"];
+	const extensions = [".jpg", ".png", ".webp", ".bmp", ".jpeg"];
 	let splitedUrl = url.split("/");
 	let title = splitedUrl[splitedUrl.length - 1].split("_").join(" ");
 	extensions.forEach((e) => (title = title.replace(e, "")));
