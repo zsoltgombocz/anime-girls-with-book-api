@@ -2,7 +2,7 @@ const express = require("express");
 const { paginateData } = require("./paginateData");
 const { filterData } = require("./filterData");
 let file;
-const IMAGE_PER_PAGE = 5;
+const IMAGE_PER_PAGE = 16;
 
 try {
 	file = require("./data.json");
