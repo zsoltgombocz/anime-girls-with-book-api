@@ -1,5 +1,3 @@
-const _ = require("lodash");
-
 const filterData = (data, filter) => {
 	let folders = data.map((x) => x.name);
 	if (filter && folders.includes(filter)) {
@@ -10,7 +8,7 @@ const filterData = (data, filter) => {
 			returnData.push(...filterByCategory(data, f));
 		});
 
-		return _.shuffle(returnData);
+		return returnData;
 	}
 };
 

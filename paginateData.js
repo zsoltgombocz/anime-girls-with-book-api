@@ -17,7 +17,6 @@ const paginateData = (data, page, IMAGE_PER_PAGE) => {
 		const from = (page - 1) * IMAGE_PER_PAGE;
 		const to = IMAGE_PER_PAGE * page;
 		returnObject.from = parseInt(from);
-		console.log(page);
 		returnObject.to = page === max_page ? data.length : parseInt(to);
 		returnObject.current_page = parseInt(page);
 		returnObject.total_page = Math.ceil(data.length / IMAGE_PER_PAGE);
