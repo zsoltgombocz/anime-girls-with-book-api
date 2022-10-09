@@ -15,8 +15,14 @@ require("dotenv").config();
 
 const app = express();
 
+const SHUFFLED_ALL = [];
+
 app.use((req, res, next) => {
 	if (file) {
+		if (SHUFFLED_ALL.length === 0) {
+			SHUFFLED_ALL = _.shuffle(filterData(file, null));
+		}
+
 		next();
 	} else {
 		res.status(500).json({
@@ -26,7 +32,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-	let filteredData = filterData(file, req.query.filter);
+	let filteredData = req.query.filter ? filterData(file, req.query.filter) : SHUFFLED_ALL;
 	let paginatedData = paginateData(filteredData, req.query.page, IMAGE_PER_PAGE);
 	res.json(_.shuffle(paginatedData));
 });
