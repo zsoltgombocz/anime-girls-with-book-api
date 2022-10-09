@@ -37,7 +37,7 @@ app.get("/", (req, res) => {
 			? filterData(file, req.query.filter)
 			: SHUFFLED_ALL;
 	let paginatedData = paginateData(filteredData, req.query.page, IMAGE_PER_PAGE);
-	res.json(_.shuffle(paginatedData));
+	res.json(paginatedData);
 });
 
 app.listen(5000, () => {
