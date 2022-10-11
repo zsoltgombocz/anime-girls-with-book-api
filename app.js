@@ -2,6 +2,7 @@ const express = require("express");
 const { paginateData } = require("./paginateData");
 const { filterData } = require("./filterData");
 const _ = require("lodash");
+const { getAllCategories } = require("./getAllCategories");
 let file;
 const IMAGE_PER_PAGE = 16;
 
@@ -38,6 +39,10 @@ app.get("/", (req, res) => {
 			: SHUFFLED_ALL;
 	let paginatedData = paginateData(filteredData, req.query.page, IMAGE_PER_PAGE);
 	res.json(paginatedData);
+});
+
+app.get("/categories", (req, res) => {
+	res.json(getAllCategories(file));
 });
 
 app.listen(5000, () => {
