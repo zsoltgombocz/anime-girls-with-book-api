@@ -3,6 +3,7 @@ const { paginateData } = require("./paginateData");
 const { filterData } = require("./filterData");
 const _ = require("lodash");
 const { getAllCategories } = require("./getAllCategories");
+const { decode } = require("base-64");
 let file;
 const IMAGE_PER_PAGE = 16;
 
@@ -34,8 +35,8 @@ app.use((req, res, next) => {
 
 app.get("/", (req, res) => {
 	let filteredData =
-		req.query.filter && req.query.filter !== "all"
-			? filterData(file, req.query.filter)
+		req.query.filter && decode(req.query.filter) !== "all"
+			? filterData(file, decode(req.query.filter))
 			: SHUFFLED_ALL;
 	let paginatedData = paginateData(filteredData, req.query.page, IMAGE_PER_PAGE);
 	res.json(paginatedData);
