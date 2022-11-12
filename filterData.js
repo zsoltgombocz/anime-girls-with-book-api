@@ -22,13 +22,17 @@ const filterByCategory = (data, category) => {
 	return returnData;
 };
 
-const imageObject = (folderName, imageUrl) => {
-	let title = getTitleFromURL(imageUrl);
+const imageObject = (folderName, image) => {
+	let title = getTitleFromURL(image.url);
 
 	return {
 		title,
-		url: imageUrl,
+		url: image.url,
 		category: folderName,
+		dimensions: {
+			width: image.width,
+			height: image.height,
+		},
 	};
 };
 

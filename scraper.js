@@ -1,10 +1,9 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
 const fs = require("fs");
+const probe = require("probe-image-size");
 
 require("dotenv").config();
-
-const path = require("path");
 
 const excludeLinkName = ["CONTRIBUTING.md", "README.md", "memes"];
 
@@ -40,7 +39,18 @@ const extractImagesFromFolders = async (data) => {
 		try {
 			if (index === 0) fs.appendFile("data.json", "[\n", (err) => err && console.log(err));
 			let content = await getImagesFromURL(data[index].url);
-			data[index].content.push(...content);
+			for (let i = 0; i <= content.length - 1; i++) {
+				let { height, width } = await getImageDimension(content[i]);
+				const image = {
+					url: content[i],
+					height,
+					width,
+				};
+
+				data[index].content.push(image);
+			}
+
+			//data[index].content.push(...content);
 			fs.appendFile(
 				"data.json",
 				JSON.stringify(data[index], null, 4) + (index !== data.length - 1 ? ",\n" : ""),
@@ -79,6 +89,13 @@ const getImagesFromURL = async (url) => {
 		} catch (error) {
 			reject(error);
 		}
+	});
+};
+
+const getImageDimension = (imageUrl) => {
+	return new Promise(async (resolve, reject) => {
+		let { width, height } = await probe(imageUrl);
+		resolve({ width, height });
 	});
 };
 
