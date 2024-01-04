@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  app:
+    container_name: anime-girls-with-books-api
+    build: .
+    ports: 
+      - 3005:5000
+    environment:
+      APP_PORT: 5000
