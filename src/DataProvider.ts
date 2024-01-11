@@ -1,17 +1,21 @@
-import { BookCategory } from "./types";
+import { BookCategory, Image } from "./types";
 import fs from 'node:fs/promises';
 
 interface DataProviderInterface {
     fileName: string;
-    data: BookCategory[],
+    images: Image[];
+    categories: BookCategory[];
 
     load: () => Promise<DataProvider>;
-    getCategories: () => string[];
+    getCategories: () => BookCategory[];
+    getAllImages: () => Image[];
+    getImagesFromCategory: (category: string) => Image[];
 }
 
 export class DataProvider implements DataProviderInterface {
     fileName: string;
-    data: BookCategory[] = [];
+    categories: BookCategory[] = [];
+    images: Image[] = [];
 
     constructor(fileName: string) {
         this.fileName = fileName;
@@ -21,14 +25,21 @@ export class DataProvider implements DataProviderInterface {
         try {
             const data = await fs.readFile(`${process.cwd()}/src/data/${this.fileName}`, 'utf8');
             const jsonData = JSON.parse(data);
+
             //Loop through data entries. Every object in this data is a category containing the images.
+            //Create the categories and the images array in logical form.
             for (let i = 0; i < jsonData.length; i++) {
                 const category = jsonData[i];
 
-                this.data.push({
+                this.categories.push({
                     name: category.name,
                     url: category.url,
                 } as BookCategory);
+
+                category.content.map((image: any) => this.images.push({
+                    ...image,
+                    category: category.name
+                } as Image));
             }
 
             return this;
@@ -38,7 +49,15 @@ export class DataProvider implements DataProviderInterface {
         }
     }
 
-    getCategories = (): string[] => {
-        return this.data.map<string>((category: BookCategory) => category.name);
+    getCategories = (): BookCategory[] => {
+        return this.categories;
+    }
+
+    getAllImages = (): Image[] => {
+        return this.images;
+    }
+
+    getImagesFromCategory = (category: string): Image[] => {
+        return this.images.filter(image => image.category === category);
     }
 }
