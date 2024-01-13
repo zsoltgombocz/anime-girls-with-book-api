@@ -11,7 +11,7 @@ const PORT = process.env.APP_PORT || 3000;
 app.use(dataProviderMiddleware);
 
 app.get("/", (_req, res) => {
-    return res.json("Open source scraped anime girls with programming books. I hope you like my work. 👋");
+    return res.json("Open source scraped anime girls with programming books deployed via github actions. I hope you like my work. 👋");
 });
 
 app.get("/images", (req, res) => {
