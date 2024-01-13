@@ -1,8 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { DataProvider } from './DataProvider';
+import { DataProvider } from './data/DataProvider';
 import { dataProviderMiddleware } from './middlewares/dataProviderMiddleware';
-import { BookCategory, Image } from './types';
+import { BookCategory, PaginatedImages } from './types';
 
 dotenv.config();
 const app = express();
@@ -10,31 +10,21 @@ const PORT = process.env.APP_PORT || 3000;
 
 app.use(dataProviderMiddleware);
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
     return res.json("Open source scraped anime girls with programming books. I hope you like my work. 👋");
 });
 
 app.get("/images", (req, res) => {
     const provider: DataProvider = res.locals.provider;
-    const images: Image[] = provider.getAllImages();
+    const page = parseInt(req.query.page as string) || null;
+    const category = req.query.category || null;
 
-    return res.json({
-        count: images.length,
-        images
-    });
+    const images: PaginatedImages = provider.getPaginatedImages(page, 10, category as string);
+
+    return res.json({ images });
 });
 
-app.get("/images/:category", (req, res) => {
-    const provider: DataProvider = res.locals.provider;
-    const images: Image[] = provider.getImagesFromCategory(req.params.category);
-
-    return res.json({
-        count: images.length,
-        images
-    });
-});
-
-app.get("/categories", (req, res) => {
+app.get("/categories", (_req, res) => {
     const provider: DataProvider = res.locals.provider;
     const categories: BookCategory[] = provider.getCategories();
 
@@ -42,5 +32,5 @@ app.get("/categories", (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
+    console.log(`Server started on port ${PORT}.`);
 });
