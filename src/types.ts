@@ -9,3 +9,10 @@ export type Image = {
     height: number;
     category: string;
 }
+
+export type PaginatedImages = {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    images: Image[];
+}
