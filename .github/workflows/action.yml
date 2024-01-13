@@ -1,4 +1,4 @@
-name: publish
+name: Deploy to Production
 
 on:
   push:
@@ -10,7 +10,7 @@ env:
 
 jobs:
   publish:
-    name: publish image
+    name: Publish Image
     runs-on: ubuntu-latest
 
     steps:
@@ -25,16 +25,17 @@ jobs:
 
   deploy:
     needs: publish
-    name: deploy image
+    name: Deploy Image
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-    - name: install ssh keys
+    - name: Install SSH Keys
       run: | 
         install -m 600 -D /dev/null ~/.ssh/id_rsa
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-    - name: connect and pull
+    - name: Connect and Pull
       run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && docker compose pull && docker compose up -d && exit"
-    - name: cleanup
+    - name: Cleanup
       run: rm -rf ~/.ssh
