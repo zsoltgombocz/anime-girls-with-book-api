@@ -15,21 +15,28 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/images", async (
-    req: Request<{}, {}, {}, { category: string, page: string, limit: string }>, 
+    req: Request<{}, {}, {}, { category: string, page: string | undefined, limit: string }>, 
     res: Response<ImageWithId[]>
 ) => {
+    //Todo: validate request params
     const category = req.query.category ? 
         decodeURIComponent(req.query.category) : null;
-    
+
+    const isPageSet = req.query.page ? true : false;
     const page = parseInt(req.query.page || '1');
     const limit = parseInt(req.query.limit || '10');
 
-    const result = await Images.aggregate<ImageWithId>([
+    const aggregationPipeline: object[] = [
         { $match: category ? {category} : {} },
         { $skip: page },
-        { $limit: limit },
-        { $sample: { size: limit * 2} }
-    ]);
+        { $limit: limit }
+    ];
+
+    if(isPageSet) {
+        aggregationPipeline.push({ $sample: { size: limit * 2 } });
+    }
+
+    const result = await Images.aggregate<ImageWithId>(aggregationPipeline);
     const images = await result.toArray();
 
     return res.json(images);
