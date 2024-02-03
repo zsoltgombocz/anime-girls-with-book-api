@@ -100,8 +100,9 @@ export const runScraper = async (): Promise<void> => {
 
     await scrapeImages();
     console.log('Images updated!');
-
-    const shuffledImages = await Images.aggregate<ImageWithId>([{ $sample: { size: 100 } }]);
+    
+    const numberOfImages = await Images.countDocuments();
+    const shuffledImages = await Images.aggregate<ImageWithId>([{ $sample: { size: numberOfImages } }]);
     const arrayOfImages = await shuffledImages.toArray();
     await Images.insertMany(arrayOfImages);
 }
