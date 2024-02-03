@@ -1,8 +1,26 @@
 version: '3.9'
 
 services:
-  app:
-    container_name: anime-girls-with-books-api
-    build: .
-    ports: 
-      - 3005:3000
+    mongodb:
+        image: bitnami/mongodb:latest
+        container_name: anime-girls-api-mongodb
+        restart: unless-stopped
+        volumes:
+           - mongodb:/data
+
+    api:
+        container_name: anime-girls-api
+        image: ghcr.io/zsoltgombocz/anime-girls-with-books-api:latest
+        restart: unless-stopped
+        ports:
+           - 3005:4444
+        environment:
+            NODE_ENV: production
+            APP_PORT: 4444
+            MONGO_URL: mongodb://mongodb:27017/anime-girls-with-books-api
+            SCRAPE_ON_STARTUP: true
+        depends_on:
+           - mongodb
+
+volumes:
+    mongodb: {}
