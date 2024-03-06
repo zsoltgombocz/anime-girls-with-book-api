@@ -1,10 +1,11 @@
-import express, { Response, Request } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { testConnection } from './db';
 import { runScraper } from './scraper';
-import { ImageWithId, Images } from './images/image.model';
-import { Categories } from './categories/category.model';
+import ImageRoute from './images/image.route'; 
+import CategoryRoute from './categories/category.route'; 
+import errorHandler from './middlewares/errorHandler';
 
 dotenv.config();
 const app = express();
@@ -14,39 +15,10 @@ app.get("/", (_req, res) => {
     return res.json("Open source scraped anime girls with programming books deployed via github actions. I hope you like my work. 👋");
 });
 
-app.get("/images", async (
-    req: Request<{}, {}, {}, { category: string, page: string | undefined, limit: string }>, 
-    res: Response<ImageWithId[]>
-) => {
-    //Todo: validate request params
-    const category = req.query.category ? 
-        decodeURIComponent(req.query.category) : null;
+app.use('/images', ImageRoute);
+app.use('/categories', CategoryRoute);
 
-    const isPageSet = req.query.page ? true : false;
-    const page = parseInt(req.query.page || '1');
-    const limit = parseInt(req.query.limit || '10');
-
-    const aggregationPipeline: object[] = [
-        { $match: category ? {category} : {} },
-        { $skip: page },
-        { $limit: limit }
-    ];
-
-    if(isPageSet) {
-        aggregationPipeline.push({ $sample: { size: limit * 2 } });
-    }
-
-    const result = await Images.aggregate<ImageWithId>(aggregationPipeline);
-    const images = await result.toArray();
-
-    return res.json(images);
-});
-
-app.get("/categories", async (_req, res) => {
-    const result = await Categories.find({});
-    const categories = await result.toArray();
-    return res.json(categories);
-});
+app.use(errorHandler);
 
 app.listen(PORT, async () => {
     console.log(`Server started on internal port ${PORT}.`);
