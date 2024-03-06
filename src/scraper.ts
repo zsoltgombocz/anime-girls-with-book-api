@@ -32,6 +32,7 @@ const scrapeCategories = async ():Promise<void> => {
         .map<Category>(folder => ({
             name: folder.name,
             url: FOLDERS_SOURCE_URL + '/tree/master/' + encodeURIComponent(folder.path),
+            imageCount: 0,
         }));
 
         //? Drop categories before inserting the newly scraped ones
@@ -82,6 +83,8 @@ const scrapeImages = async (): Promise<void> => {
                 }
             }
 
+            await Categories.updateOne({ _id: category._id }, { $set: { imageCount: images.length }})
+
             //Halt the function in order to avoid GitHub to limit the requests
             console.log(`Saved images from ${category.name}.`)
             await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -102,7 +105,9 @@ export const runScraper = async (): Promise<void> => {
     console.log('Images updated!');
     
     const numberOfImages = await Images.countDocuments();
-    const shuffledImages = await Images.aggregate<ImageWithId>([{ $sample: { size: numberOfImages } }]);
+    const shuffledImages = await Images.aggregate<ImageWithId>([{ $sample: { size: numberOfImages * 3 } }]);
     const arrayOfImages = await shuffledImages.toArray();
+    
+    await Images.drop();
     await Images.insertMany(arrayOfImages);
 }
