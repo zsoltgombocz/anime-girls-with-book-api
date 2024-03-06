@@ -1,6 +1,12 @@
 # anime-girls-with-book-api
 
-Small API that scrapes https://github.com/cat-milk/Anime-Girls-Holding-Programming-Books repository and serve it. It may also include filtering. Feel free to use it in your projects, I am not bethered setting up a DB so it will be saved locally in a JSON file.
+Small API that scrapes https://github.com/cat-milk/Anime-Girls-Holding-Programming-Books repository and serves it.
+
+Using the /images routes will give back the paginated data. When the page is not submitted it returns the first page.
+
+/categories route gives back all the categories with the name, link, and imageCount to show on the front end.
+
+The current API version is built to support my front end.
 
 
  
