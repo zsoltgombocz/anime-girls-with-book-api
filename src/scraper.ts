@@ -1,9 +1,11 @@
 import * as cheerio from 'cheerio';
 import { Categories, Category } from './categories/category.model';
-import Image, { Images } from './images/image.model';
+import Image, { ImageWithId, Images } from './images/image.model';
+import probe from 'probe-image-size';
+
 
 const FOLDERS_SOURCE_URL = "https://github.com/cat-milk/Anime-Girls-Holding-Programming-Books";
-const BASE_URL = "https://github.com/cat-milk/Anime-Girls-Holding-Programming-Books/tree/master/";
+const BASE_URL = "https://raw.githubusercontent.com/cat-milk/Anime-Girls-Holding-Programming-Books/master/";
 
 type gitHubItem = {
     name: string,
@@ -29,7 +31,8 @@ const scrapeCategories = async ():Promise<void> => {
         .filter(folder => folder.contentType === 'directory')
         .map<Category>(folder => ({
             name: folder.name,
-            url: BASE_URL + encodeURIComponent(folder.path),
+            url: FOLDERS_SOURCE_URL + '/tree/master/' + encodeURIComponent(folder.path),
+            imageCount: 0,
         }));
 
         //? Drop categories before inserting the newly scraped ones
@@ -59,21 +62,28 @@ const scrapeImages = async (): Promise<void> => {
             .filter(item => item.contentType === 'file')
             .map<Image>(item => ({
                 category: category.name,
-                url: BASE_URL.replace('tree', 'blob') + item.path,
+                url: BASE_URL + item.path.split('/').map(fragment => encodeURIComponent(fragment)).join('/'),
                 height: 0,
                 width: 0,
                 new: true,
             }));
 
             //Update or insert the images, if the image is not new set the field to false otherwise create the record
-            for(const image of images) {
+            for(let image of images) {
                 const exists = await Images.findOne({url: image.url});
+
+                let { width, height } = await probe(image.url);
+                image.height = height;
+                image.width = width;
+
                 if(exists) {
                     await Images.updateOne({ _id: exists._id }, { $set: { ...image, new: false }});
                 }else{
                     await Images.insertOne(image);
                 }
             }
+
+            await Categories.updateOne({ _id: category._id }, { $set: { imageCount: images.length }})
 
             //Halt the function in order to avoid GitHub to limit the requests
             console.log(`Saved images from ${category.name}.`)
@@ -86,9 +96,18 @@ const scrapeImages = async (): Promise<void> => {
 }
 
 export const runScraper = async (): Promise<void> => {
+    console.log('Running scraper:', new Date(Date.now()).toLocaleString('hu'));
+
     await scrapeCategories();
     console.log('Categories updated!');
 
     await scrapeImages();
     console.log('Images updated!');
+    
+    const numberOfImages = await Images.countDocuments();
+    const shuffledImages = await Images.aggregate<ImageWithId>([{ $sample: { size: numberOfImages * 3 } }]);
+    const arrayOfImages = await shuffledImages.toArray();
+    
+    await Images.drop();
+    await Images.insertMany(arrayOfImages);
 }

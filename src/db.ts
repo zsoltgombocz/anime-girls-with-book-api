@@ -3,7 +3,11 @@ import * as z from 'zod';
 
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/anime-girls-with-books-api'
 
-export const client = new MongoClient(MONGO_URL);
+export const client = new MongoClient(MONGO_URL, {
+    connectTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 5000
+});
+
 export const db = client.db();
 
 export const testConnection = async (): Promise<boolean> => {
