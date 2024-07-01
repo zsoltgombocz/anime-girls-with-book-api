@@ -12,7 +12,7 @@ const requestParams = z.object({
 
 router.get("/", async (
     req: Request<{}, {}, {}, { category: string | undefined, page: string | undefined, limit: string | undefined}>, 
-    res: Response<ImageWithId[]>,
+    res: Response<{data: ImageWithId[], paginator: unknown}>,
     next: NextFunction
 ) => {
     try {
@@ -24,14 +24,29 @@ router.get("/", async (
             { $limit: params.limit }
         ];
 
-        if(params.page) {
-            aggregationPipeline.push({ $sample: { size: params.limit * 2 } });
-        }
+        let paginator;
 
+        if(params.page) {
+            const allImages: number = await Images.countDocuments();
+
+            aggregationPipeline.push({ $sample: { size: params.limit * 2 } });
+            const totalPages = Math.floor(allImages / params.limit);
+            const currentpage = params.page;
+            paginator = {
+                hasNextPage: totalPages > params.page,
+                nextPage: totalPages < currentpage + 1 ? null : currentpage + 1,
+                previousPage: currentpage !== 1 ? currentpage - 1 : null,
+                totalPages: Math.floor(allImages / params.limit),
+                currentPage: currentpage
+            };
+        }
         const result = await Images.aggregate<ImageWithId>(aggregationPipeline);
         const images = await result.toArray();
 
-        return res.json(images);
+        return res.json({
+            data: images,
+            paginator 
+        });
     } catch (error) {
         next(error);
     }

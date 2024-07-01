@@ -6,6 +6,7 @@ import { runScraper } from './scraper';
 import ImageRoute from './images/image.route'; 
 import CategoryRoute from './categories/category.route'; 
 import errorHandler from './middlewares/errorHandler';
+import cors from 'cors';
 
 dotenv.config();
 const app = express();
@@ -14,6 +15,8 @@ const PORT = process.env.APP_PORT || 3000;
 app.get("/", (_req, res) => {
     return res.json("Open source scraped anime girls with programming books deployed via github actions. I hope you like my work. 👋");
 });
+
+app.use(cors({ origin: '*'}));
 
 app.use('/images', ImageRoute);
 app.use('/categories', CategoryRoute);
@@ -29,7 +32,7 @@ app.listen(PORT, async () => {
         process.kill(0);
     }
 
-    if(process.env.SCRAPE_ON_STARTUP) {
+    if(process.env.SCRAPE_ON_STARTUP == '1') {
         console.log('Running scraper on startup.')
         runScraper();
     }
