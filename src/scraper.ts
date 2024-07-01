@@ -3,9 +3,7 @@ import { Categories, Category } from './categories/category.model';
 import Image, { ImageWithId, Images } from './images/image.model';
 import probe from 'probe-image-size';
 
-
-const FOLDERS_SOURCE_URL = "https://github.com/cat-milk/Anime-Girls-Holding-Programming-Books";
-const BASE_URL = "https://raw.githubusercontent.com/cat-milk/Anime-Girls-Holding-Programming-Books/master/";
+const BASE_URL = "https://api.github.com/repos/cat-milk/Anime-Girls-Holding-Programming-Books/contents";
 
 type gitHubItem = {
     name: string,
@@ -15,23 +13,18 @@ type gitHubItem = {
 
 const scrapeCategories = async ():Promise<void> => {
     try {
-        const response = await fetch(FOLDERS_SOURCE_URL);
-        const body = await response.text();
-        const $ = cheerio.load(body);
-        
-        const data = $('script[data-target="react-partial.embeddedData"]');
+        const response = await fetch(BASE_URL, {
+            headers: {
+                'Authorization': 'Bearer ' + process.env.GITHUB_PAT 
+            }
+        });
+        const body: any[] = await response.json();
 
-        //? Get the data which contains all the information and create a valid JSON from it.
-        //? Access the 'items' field which holds the data of the folders and files.
-        const validData = JSON.parse(`[${data.text().replace(/}(?={)/g, '},')}]`);
-        const folders: gitHubItem[] = validData[1].props.initialPayload.tree.items;
-        
-        //? Filter for directories and generate a new array to match the schema and populate the database.
-        const categories: Category[] = folders
-        .filter(folder => folder.contentType === 'directory')
-        .map<Category>(folder => ({
-            name: folder.name,
-            url: FOLDERS_SOURCE_URL + '/tree/master/' + encodeURIComponent(folder.path),
+        const categories: Category[] = body
+        .filter((data: any) => data.type === 'dir')
+        .map(data => ({
+            name: data.name,
+            url: data.url,
             imageCount: 0,
         }));
 
@@ -52,17 +45,19 @@ const scrapeImages = async (): Promise<void> => {
     const categories = await Categories.find().toArray();
    
     for(let category of categories) {
-        const response = await fetch(category.url);
+        const response = await fetch(category.url, {
+            headers: {
+                'Authorization': 'Bearer ' + process.env.GITHUB_PAT 
+            }
+        });
         try {
-            const body = await response.json();
-            const items: gitHubItem[] = body.payload.tree.items;
-            
-            //Transform raw data into a models
-            let images = items
-            .filter(item => item.contentType === 'file')
+            const body: any[] = await response.json();
+
+            let images = body
+            .filter(item => item.type === 'file')
             .map<Image>(item => ({
                 category: category.name,
-                url: BASE_URL + item.path.split('/').map(fragment => encodeURIComponent(fragment)).join('/'),
+                url: item.download_url,
                 height: 0,
                 width: 0,
                 new: true,
